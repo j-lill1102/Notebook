@@ -1,0 +1,346 @@
+---
+title: Does The Amount of Hits By A Team In The NHL Weigh Into Their Wins?
+author: Josh Lill
+date: '2022-03-31'
+slug: does-the-amount-of-hits-by-a-team-in-the-nhl-weigh-into-their-wins
+categories: []
+tags: []
+---
+
+
+Incredible, eye-opening and exhilarating do justice in describing the game of hockey.  
+
+As the chilly air of the arena brushes upon your face, your heart beats faster and faster as each moment toward puck-drop passes by.  There are so many aspects of this wonderful game that draw sellout crowds all across the United States of America.  
+
+Whether Alex Ovechkin is breaking scoring titles year after year or Marc Andre-Fleury's graceful, yet stupendous saves, take a crowd's breath away, the most flashy parts of the game may not be the only driving factors into determining a team's success.
+
+One of those driving factors: hits.
+
+Hits and the aggressiveness that comes with it is just as big of a part of hockey as scoring, passing and flashy saves are.  In hockey, players might have a scrappy, hard-hitting attitude about their persona that give their team an edge in the hitting department.  Some players are fighting for playing time, so every second on the ice is crucial. 
+
+It is teams in the NHL, comprised of those kinds of players, that always find a way to make a run at the Stanley Cup.   
+
+The main question that needs to be asked: do the amount of hits a team in the NHL has factor into their success?
+
+The Ottawa Senators rank among the best hitting teams, rounding out the top spot in hitting in the league.  
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(scales)
+library(gt)
+
+logs <- read_csv("EvenMoreHockeyStats - Sheet1.csv")
+
+NHL <- logs %>%
+  arrange(desc(`HITS`)) %>%
+  top_n(32, `HITS`)
+
+
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+ggplot() +
+  geom_bar(data=NHL, aes(x=reorder(Team, `HITS`), weight=`HITS`)) +
+  scale_y_continuous(labels=comma) +
+  coord_flip() +
+  labs(title="Team Hitting Totals In The NHL's 2021-22 Season", subtitle="Where do the top-ranked Colorado Avalanche and Florida Panthers sit?.", x="Team", y="Hits", caption="Source: QuantHockey | By. Josh Lill") + 
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14), 
+    plot.subtitle = element_text(size=12), 
+    panel.grid.minor = element_blank()
+    )
+```
+The Florida Panthers, currently the second-best team in the NHL, are currently sitting at sixth on the list for total hits.  The New York Rangers and the Boston Bruins, who round out the fifth and seventh ranked teams in the NHL standings, are in the top 10 for hits in the NHL.  There may be something to be said about the correlation between those three teams' success and and their aggressiveness.  
+
+However, the best team in the NHL, the Avalanche, sit at 24th on the list.  Will this lack of hitting come to hurt them later on down the line?  It will be something to keep an eye on. 
+
+The correlation between points and hits help to convey your success with your hitting.  Points, for those who don't know, are comprised of wins and overtime losses.  You receive two points for a win and one point for an overtime loss.  The more points you have, the higher you will be in the standings.
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+winhitslogs <- read_csv("EvenMoreHockeyStats - Sheet1.csv")
+
+
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+playoffs <- winhitslogs %>% 
+  filter(PTS >= 83) 
+ 
+
+ggplot() + 
+  geom_point(data=winhitslogs, aes(x=HITS, y=PTS)) +
+  geom_smooth(data=winhitslogs, aes(x=HITS, y=PTS), method="lm") +
+  geom_point(data=winhitslogs, aes(x=HITS, y=PTS), color="black") +
+  geom_point(data=playoffs, aes(x=HITS, y=PTS), color="red") +
+  labs(title="Teams In The Playoff Race Are Above the Average.", subtitle="Teams in the playoff race are in red.", x="Hits", y="Points", caption="Source: QuantHockey | By. Josh Lill") +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 12), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    )
+
+```
+
+As you can see, 16 of the 17 teams above the hitting average are playoff/wild card teams.  The one non-contending team in that spot: the Vegas Golden Knights.  Take a look at the dot in the bottom right corner.  That's the Ottawa Senators, who have accumulated a league-high 2,079 hits, but a dismal 58 points.
+
+Jumping back to October, hits may not be the biggest factor in the game in October and November.  It's the start of a new season and that aspect of the game may not be on players' minds.  Or is it on their minds?  Now, come March and April, hits may be adding up left and right with the playoffs right around the corner.  
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+logs <- read_csv("BegandEnd - Sheet1.csv")
+
+
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+logs %>% 
+  gt() %>% 
+  cols_label(
+    EarlyHits = "Oct.12 - Nov.30 Hits",
+    LateHits = "Mar.1 - Apr.7 Hits"
+) %>%
+tab_header(
+  title = "How The League's Playoff, Wild Card and 10 Worst Teams Held Up From The Start To The End The Season.",
+  subtitle = "Playoff teams are in Yellow; Wild Card Teams are in Red; 10 Worst are in Purple."
+) %>% tab_style(
+    style = cell_text(color = "black", weight = "bold", align = "left"),
+    locations = cells_title("title")
+  ) %>% tab_style(
+    style = cell_text(color = "blue", align = "left"),
+    locations = cells_title("subtitle")
+  ) %>%
+  tab_source_note(
+    source_note = md("**By:** Josh Lill  |  **Source:** QuantHockey")
+  )%>%
+  tab_style(
+     locations = cells_column_labels(columns = everything()),
+     style = list(
+       cell_borders(sides = "bottom", weight = px(3)),
+       cell_text(weight = "bold", size=12)
+     )
+   )%>%
+  opt_row_striping() %>% 
+  opt_table_lines("none") %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Carolina Hurricanes")
+  )  %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "New York Rangers")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Pittsburgh Penguins")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Florida Panthers")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Toronto Maple Leafs")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Boston Bruins")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Boston Bruins")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "red"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Tampa Bay Lightning")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "red"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Washington Capitals")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Colorado Avalanche")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Minnesota Wild")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "St. Louis Blues")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Calgary Flames")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Edmonton Oilers")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "yellow")
+      ),
+    locations = cells_body(
+      rows = Team == "Los Angeles Kings")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "red"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Nashville Predators")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "red"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Dallas Stars")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "purple"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "San Jose Sharks")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "purple"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Detroit Red Wings")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "purple"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Buffalo Sabres")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "purple"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Chicago Blackhawks")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "purple"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Ottawa Senators")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "purple"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Philadelphia Flyers")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "purple"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "New Jersey Devils")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "purple"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Seattle Kraken")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "purple"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Montreal Canadiens")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "purple"),
+      cell_text(color = "white")
+      ),
+    locations = cells_body(
+      rows = Team == "Arizona Coyotes")
+  )
+
+```
+
+As you can see, out of the 10 worst teams in the standings, as of April 7, 2022, only the Detroit Red Wings have accrued more wins in the last two months of the season than in the first two.  
+
+As for the wild card teams, Nashville heavily increased their hitting numbers over this time period, being the only wild card team to do so.  Tampa Bay and Washington's hitting number have dropped dramatically, which might be pointing to the reason why they are on the edge of the playoffs.  
+
+Lastly, of the 12 playoff teams, only seven improved their hitting.  You may be wondering why!  Well, a lot of teams, who at the top of their divisions, may ease play on the ice so they can save their stamina for the playoffs.
+
+Overall, the amount of hits a team has does help to the playoffs and a successful season.  Good teams hit above the league average and can sustain that success throughout the season.
+
+With the run to the greatest trophy in all of the sports, the Stanley Cup, will we see a plethora of hits from all 16 teams?
+
+One could and should count on it.
+
+Note: The code that made this blog possible can be found [here](https://github.com/j-lill1102/j-lill1102.github.io).
